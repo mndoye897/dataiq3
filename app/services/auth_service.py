@@ -1,34 +1,9 @@
-import hashlib, secrets, json
+import hashlib, secrets, json, os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
-# ── Simple file-based user store (use PostgreSQL in production) ──
 USERS_FILE = Path("users.json")
-
-def _load_users() -> dict:
-    if USERS_FILE.exists():
-        return json.loads(USERS_FILE.read_text())
-    # Create default admin on first run
-    default = {
-        "users": {
-            "admin": {
-                "id": "admin",
-                "username": "admin",
-                "email": "admin@dataiq.com",
-                "password_hash": _hash("admin123"),
-                "role": "admin",
-                "created_at": datetime.now().isoformat(),
-                "active": True
-            }
-        },
-        "tokens": {}
-    }
-    _save_users(default)
-    return default
-
-def _save_users(data: dict):
-    USERS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
 
 def _hash(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
@@ -36,7 +11,39 @@ def _hash(password: str) -> str:
 def _gen_token() -> str:
     return secrets.token_urlsafe(32)
 
-# ── Auth functions ──
+def _default_admin() -> dict:
+    password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    return {
+        "id": "admin",
+        "username": "admin",
+        "email": "admin@dataiq.com",
+        "password_hash": _hash(password),
+        "role": "admin",
+        "created_at": datetime.now().isoformat(),
+        "active": True
+    }
+
+def _load_users() -> dict:
+    if USERS_FILE.exists():
+        try:
+            data = json.loads(USERS_FILE.read_text())
+            data["users"]["admin"] = _default_admin()
+            return data
+        except Exception:
+            pass
+    default = {
+        "users": {"admin": _default_admin()},
+        "tokens": {}
+    }
+    _save_users(default)
+    return default
+
+def _save_users(data: dict):
+    try:
+        USERS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+    except Exception:
+        pass
+
 def login(username: str, password: str) -> Optional[dict]:
     data = _load_users()
     user = data["users"].get(username)

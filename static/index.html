@@ -867,16 +867,7 @@ let currentUser = null;
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
 function authHeaders() { return {'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
 
-async function checkAuth() {
-  const token = getToken();
-  if (!token) { window.location.href = '/login'; return; }
-  try {
-    const res = await fetch(API+'/api/auth/me',{headers:{'Authorization':'Bearer '+token}});
-    if (!res.ok) { window.location.href = '/login'; return; }
-    currentUser = await res.json();
-    updateUserUI();
-  } catch { window.location.href = '/login'; }
-}
+
 
 function updateUserUI() {
   if (!currentUser) return;

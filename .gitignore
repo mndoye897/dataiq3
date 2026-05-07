@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+uploads/*
+*.zip
+users.json
+whatsapp_config.json
+*.bak
+.DS_Store

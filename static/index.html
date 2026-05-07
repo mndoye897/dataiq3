@@ -784,7 +784,7 @@ function buildReportPayload() {
 }
 async function previewReport() {
   if (!document.getElementById('rSession').value) { showToast('✗ Sélectionnez une base de données', true); return; }
-  showToast('⏳ Génération de l'aperçu…');
+  showToast("⏳ Génération de l'aperçu…");
   try {
     const res = await fetch(API + '/api/reports/preview', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(buildReportPayload()) });
     if (!res.ok) throw new Error(await res.text());
@@ -965,7 +965,7 @@ checkAuth();
 
 // ── DASHBOARD ──
 function openDashboard() {
-  if (!sessionId) { showToast('✗ Chargez d'abord une base de données', true); return; }
+  if (!sessionId) { showToast("✗ Chargez d'abord une base de données", true); return; }
   document.getElementById('dashOverlay').classList.add('open');
   loadDashboard();
 }
@@ -1065,7 +1065,7 @@ function renderDashboard(data, body) {
 let proNotifCount = 0;
 
 function openProactive() {
-  if (!sessionId) { showToast('✗ Chargez d'abord une base', true); return; }
+  if (!sessionId) { showToast("✗ Chargez d'abord une base", true); return; }
   document.getElementById('proOverlay').classList.add('open');
   loadProactive();
 }
@@ -1090,7 +1090,7 @@ async function loadProactive() {
   }
 }
 
-}
+
 
 function renderProactive(data, body) {
   const impactLabels = {high:'Impact élevé', medium:'Impact moyen', low:'Impact faible'};

@@ -428,7 +428,7 @@ html,body{height:100%;background:var(--paper);color:var(--ink);font-family:'Outf
       <div class="pro-notif" id="proNotifBadge" style="display:none;">0</div>
     </div>
         <button class="dash-btn" onclick="openDashboard()"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="4" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="8" width="7" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg> Dashboard</button>
-        <button class="reports-btn" onclick="openReports()"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 2h10a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Rapports</button><div class="api-status">API · localhost:8000</div>
+        <button class="reports-btn" onclick="openReports()"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 2h10a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Rapports</button><div class="api-status">API · DataIQ Cloud</div>
   </header>
 
   <aside class="sidebar">
@@ -556,7 +556,7 @@ html,body{height:100%;background:var(--paper);color:var(--ink);font-family:'Outf
 </div>
 
 <script>
-const API='http://127.0.0.1:8000';
+const API=window.location.origin;
 let sessionId=null,dbItems=[],chatHistory=[],currentDbType='postgres';
 
 // ── TABS ──
@@ -784,7 +784,7 @@ function buildReportPayload() {
 }
 async function previewReport() {
   if (!document.getElementById('rSession').value) { showToast('✗ Sélectionnez une base de données', true); return; }
-  showToast('⏳ Génération de l'aperçu…');
+  showToast("⏳ Génération de l'aperçu…");
   try {
     const res = await fetch(API + '/api/reports/preview', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(buildReportPayload()) });
     if (!res.ok) throw new Error(await res.text());
@@ -965,7 +965,7 @@ checkAuth();
 
 // ── DASHBOARD ──
 function openDashboard() {
-  if (!sessionId) { showToast('✗ Chargez d'abord une base de données', true); return; }
+  if (!sessionId) { showToast("✗ Chargez d'abord une base de données", true); return; }
   document.getElementById('dashOverlay').classList.add('open');
   loadDashboard();
 }
@@ -1065,7 +1065,7 @@ function renderDashboard(data, body) {
 let proNotifCount = 0;
 
 function openProactive() {
-  if (!sessionId) { showToast('✗ Chargez d'abord une base', true); return; }
+  if (!sessionId) { showToast("✗ Chargez d'abord une base", true); return; }
   document.getElementById('proOverlay').classList.add('open');
   loadProactive();
 }
@@ -1090,7 +1090,7 @@ async function loadProactive() {
   }
 }
 
-}
+
 
 function renderProactive(data, body) {
   const impactLabels = {high:'Impact élevé', medium:'Impact moyen', low:'Impact faible'};

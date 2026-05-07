@@ -65,7 +65,7 @@ html,body{height:100%;background:var(--ink);font-family:'Outfit',sans-serif;disp
 </div>
 
 <script>
-const API = 'http://127.0.0.1:8000';
+const API = window.location.origin;
 async function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;

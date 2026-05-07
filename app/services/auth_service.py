@@ -3,14 +3,19 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
-# ── Simple file-based user store (use PostgreSQL in production) ──
 USERS_FILE = Path("users.json")
 
-def _load_users() -> dict:
-    if USERS_FILE.exists():
-        return json.loads(USERS_FILE.read_text())
-    # Create default admin on first run
-    default = {
+
+def _hash(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def _gen_token() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def _default_data() -> dict:
+    return {
         "users": {
             "admin": {
                 "id": "admin",
@@ -24,19 +29,30 @@ def _load_users() -> dict:
         },
         "tokens": {}
     }
-    _save_users(default)
-    return default
+
 
 def _save_users(data: dict):
-    USERS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+    try:
+        USERS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+    except Exception as e:
+        print(f"Warning: cannot save users.json: {e}")
 
-def _hash(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
 
-def _gen_token() -> str:
-    return secrets.token_urlsafe(32)
+def _load_users() -> dict:
+    try:
+        if USERS_FILE.exists():
+            data = json.loads(USERS_FILE.read_text())
+            if "admin" not in data.get("users", {}):
+                data["users"]["admin"] = _default_data()["users"]["admin"]
+                _save_users(data)
+            return data
+    except Exception:
+        pass
+    data = _default_data()
+    _save_users(data)
+    return data
 
-# ── Auth functions ──
+
 def login(username: str, password: str) -> Optional[dict]:
     data = _load_users()
     user = data["users"].get(username)
@@ -51,6 +67,7 @@ def login(username: str, password: str) -> Optional[dict]:
     }
     _save_users(data)
     return {"token": token, "user": {k: v for k, v in user.items() if k != "password_hash"}}
+
 
 def verify_token(token: str) -> Optional[dict]:
     if not token:
@@ -68,14 +85,17 @@ def verify_token(token: str) -> Optional[dict]:
         return None
     return {k: v for k, v in user.items() if k != "password_hash"}
 
+
 def logout(token: str):
     data = _load_users()
     data["tokens"].pop(token, None)
     _save_users(data)
 
+
 def list_users() -> list:
     data = _load_users()
     return [{k: v for k, v in u.items() if k != "password_hash"} for u in data["users"].values()]
+
 
 def create_user(username: str, email: str, password: str, role: str) -> dict:
     data = _load_users()
@@ -96,6 +116,7 @@ def create_user(username: str, email: str, password: str, role: str) -> dict:
     _save_users(data)
     return {k: v for k, v in user.items() if k != "password_hash"}
 
+
 def update_user(username: str, updates: dict) -> dict:
     data = _load_users()
     if username not in data["users"]:
@@ -105,6 +126,7 @@ def update_user(username: str, updates: dict) -> dict:
     data["users"][username].update(updates)
     _save_users(data)
     return {k: v for k, v in data["users"][username].items() if k != "password_hash"}
+
 
 def delete_user(username: str):
     data = _load_users()

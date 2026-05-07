@@ -228,37 +228,6 @@ html,body{height:100%;background:var(--paper);color:var(--ink);font-family:'Outf
 .reports-btn:hover{border-color:var(--gold);color:var(--gold);}
 .preview-frame{width:100%;height:500px;border:1px solid var(--border);border-radius:var(--r-sm);margin-top:12px;}
 
-/* ── AUTH ── */
-.user-menu{position:relative;}
-.user-btn{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);background:transparent;cursor:pointer;transition:all 0.2s;}
-.user-btn:hover{border-color:rgba(255,255,255,0.25);}
-.user-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
-.user-name{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.7);}
-.user-role{font-family:'DM Mono',monospace;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:2px;}
-.user-role.admin{background:rgba(201,168,76,0.2);color:var(--gold);}
-.user-role.analyst{background:rgba(0,184,160,0.2);color:var(--teal);}
-.user-role.viewer{background:rgba(107,104,128,0.2);color:var(--muted);}
-.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--ink2);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r);width:200px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:100;display:none;}
-.user-dropdown.open{display:block;}
-.ud-header{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.ud-email{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);}
-.ud-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,0.6);cursor:pointer;transition:background 0.15s;}
-.ud-item:hover{background:rgba(255,255,255,0.05);color:#fff;}
-.ud-item.danger:hover{color:var(--red);}
-/* ── USERS PANEL ── */
-.users-table{width:100%;border-collapse:collapse;}
-.users-table th{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;}
-.users-table td{padding:10px 12px;border-bottom:1px solid var(--border2);font-size:13px;color:var(--ink);}
-.users-table tr:last-child td{border-bottom:none;}
-.role-chip{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:3px;}
-.role-chip.admin{background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.2);}
-.role-chip.analyst{background:rgba(0,184,160,0.1);color:var(--teal);border:1px solid rgba(0,184,160,0.2);}
-.role-chip.viewer{background:rgba(107,104,128,0.1);color:var(--muted);border:1px solid rgba(107,104,128,0.2);}
-.user-action{font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);transition:all 0.15s;font-family:'DM Mono',monospace;}
-.user-action:hover{border-color:var(--red);color:var(--red);}
-.new-user-form{background:var(--paper2);border-radius:var(--r-sm);padding:16px;margin-top:16px;}
-.nu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-
 /* ── DASHBOARD ── */
 .dash-overlay{position:fixed;inset:0;background:var(--paper);z-index:40;display:none;flex-direction:column;overflow:hidden;}
 .dash-overlay.open{display:flex;}
@@ -392,7 +361,6 @@ html,body{height:100%;background:var(--paper);color:var(--ink);font-family:'Outf
 .pro-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.5);transition:all 0.2s;}
 .pro-btn:hover{border-color:var(--gold);color:var(--gold);}
 
-
 /* ── SVG ICONS ── */
 .db-type-icon svg{display:block;}
 .db-type-btn{padding:10px 6px;}
@@ -419,7 +387,7 @@ html,body{height:100%;background:var(--paper);color:var(--ink);font-family:'Outf
       <div style="font-size:13px;font-weight:600;color:#fff;" id="udFullName">—</div>
       <div class="ud-email" id="udEmail">—</div>
     </div>
-    <div class="ud-item" id="udAdminItem" onclick="openUsers()" style="display:none;">👥 Gérer les utilisateurs</div>
+    <div class="ud-item" id="udAdminItem"  style="display:none;">👥 Gérer les utilisateurs</div>
     <div class="ud-item danger" onclick="logout()">🚪 Se déconnecter</div>
   </div>
 </div>
@@ -859,110 +827,6 @@ async function deleteReport(id) {
   } catch(err) { showToast('✗ Erreur', true); }
 }
 
-// ── AUTH ──
-const TOKEN_KEY = 'dataiq_token';
-const USER_KEY = 'dataiq_user';
-let currentUser = null;
-
-function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
-function authHeaders() { return {'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
-
-async function checkAuth() {
-  const token = getToken();
-  if (!token) { window.location.href = '/login'; return; }
-  try {
-    const res = await fetch(API+'/api/auth/me',{headers:{'Authorization':'Bearer '+token}});
-    if (!res.ok) { window.location.href = '/login'; return; }
-    currentUser = await res.json();
-    updateUserUI();
-  } catch { window.location.href = '/login'; }
-}
-
-function updateUserUI() {
-  if (!currentUser) return;
-  const initials = currentUser.username.slice(0,2).toUpperCase();
-  document.getElementById('userAvatar').textContent = initials;
-  document.getElementById('userName').innerHTML = currentUser.username + '<span class="user-role '+currentUser.role+'">'+currentUser.role+'</span>';
-  document.getElementById('udFullName').textContent = currentUser.username;
-  document.getElementById('udEmail').textContent = currentUser.email || '';
-  if (currentUser.role === 'admin') document.getElementById('udAdminItem').style.display = 'flex';
-}
-
-function toggleUserMenu() {
-  document.getElementById('userDropdown').classList.toggle('open');
-}
-document.addEventListener('click', e => {
-  if (!document.getElementById('userMenu').contains(e.target))
-    document.getElementById('userDropdown').classList.remove('open');
-});
-
-function logout() {
-  fetch(API+'/api/auth/logout',{method:'POST',headers:authHeaders()});
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
-  window.location.href = '/login';
-}
-
-// Patch fetch to always send auth token
-const _origFetch = window.fetch;
-window.fetch = function(url, opts={}) {
-  if (typeof url === 'string' && url.startsWith(API+'/api/') && !url.includes('/auth/login')) {
-    opts.headers = {...(opts.headers||{}), 'Authorization':'Bearer '+getToken()};
-  }
-  return _origFetch(url, opts);
-};
-
-// ── USERS PANEL ──
-function openUsers() {
-  document.getElementById('usersOverlay').classList.add('open');
-  document.getElementById('userDropdown').classList.remove('open');
-  loadUsers();
-}
-function closeUsers(e) {
-  if (!e || e.target === document.getElementById('usersOverlay'))
-    document.getElementById('usersOverlay').classList.remove('open');
-}
-async function loadUsers() {
-  try {
-    const res = await fetch(API+'/api/auth/users',{headers:authHeaders()});
-    const data = await res.json();
-    const roleLabels = {admin:'👑 Admin',analyst:'📊 Analyst',viewer:'👁 Viewer'};
-    document.getElementById('usersTbody').innerHTML = data.users.map(u=>`
-      <tr>
-        <td><strong>${esc(u.username)}</strong></td>
-        <td style="font-family:'DM Mono',monospace;font-size:11px;">${esc(u.email||'—')}</td>
-        <td><span class="role-chip ${u.role}">${roleLabels[u.role]||u.role}</span></td>
-        <td><span style="font-size:11px;color:${u.active?'var(--teal)':'var(--red)'};">${u.active?'● Actif':'○ Inactif'}</span></td>
-        <td>${u.username!=='admin'?`<button class="user-action" onclick="deleteUser('${u.username}')">Supprimer</button>`:''}</td>
-      </tr>`).join('');
-  } catch(err) { showToast('✗ '+err.message,true); }
-}
-async function createUser() {
-  const username=document.getElementById('nuUsername').value.trim();
-  const email=document.getElementById('nuEmail').value.trim();
-  const password=document.getElementById('nuPassword').value;
-  const role=document.getElementById('nuRole').value;
-  if(!username||!password){showToast('✗ Remplissez tous les champs',true);return;}
-  try {
-    const res=await fetch(API+'/api/auth/users',{method:'POST',headers:authHeaders(),body:JSON.stringify({username,email,password,role})});
-    if(!res.ok)throw new Error((await res.json()).detail);
-    showToast('✓ Utilisateur créé : '+username);
-    ['nuUsername','nuEmail','nuPassword'].forEach(id=>document.getElementById(id).value='');
-    loadUsers();
-  } catch(err){showToast('✗ '+err.message,true);}
-}
-async function deleteUser(username) {
-  if(!confirm('Supprimer '+username+' ?'))return;
-  try {
-    await fetch(API+'/api/auth/users/'+username,{method:'DELETE',headers:authHeaders()});
-    showToast('✓ Utilisateur supprimé');
-    loadUsers();
-  } catch(err){showToast('✗ Erreur',true);}
-}
-
-// Init auth on load
-checkAuth();
-
 // ── DASHBOARD ──
 function openDashboard() {
   if (!sessionId) { showToast("✗ Chargez d'abord une base de données", true); return; }
@@ -1265,39 +1129,6 @@ async function triggerProactiveAfterLoad(sid) {
           <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;">APERÇU EMAIL</div>
           <iframe id="previewFrame" class="preview-frame"></iframe>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- USERS PANEL -->
-<div class="panel-overlay" id="usersOverlay" onclick="closeUsers(event)">
-  <div class="panel" onclick="event.stopPropagation()">
-    <div class="panel-header">
-      <div style="font-size:20px;">👥</div>
-      <div class="panel-title">Gestion des utilisateurs</div>
-      <button class="panel-close" onclick="closeUsers()">✕</button>
-    </div>
-    <div class="panel-body">
-      <table class="users-table" id="usersTable">
-        <thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Statut</th><th></th></tr></thead>
-        <tbody id="usersTbody"></tbody>
-      </table>
-      <div class="new-user-form">
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">+ Nouvel utilisateur</div>
-        <div class="nu-grid">
-          <div class="p-group"><label class="p-label">Nom d'utilisateur</label><input class="p-input" id="nuUsername" placeholder="john_doe"></div>
-          <div class="p-group"><label class="p-label">Email</label><input class="p-input" id="nuEmail" placeholder="john@exemple.com"></div>
-          <div class="p-group"><label class="p-label">Mot de passe</label><input class="p-input" id="nuPassword" type="password" placeholder="••••••••"></div>
-          <div class="p-group"><label class="p-label">Rôle</label>
-            <select class="p-select" id="nuRole">
-              <option value="viewer">👁 Viewer — lecture seule</option>
-              <option value="analyst" selected>📊 Analyst — analyse complète</option>
-              <option value="admin">👑 Admin — accès total</option>
-            </select>
-          </div>
-        </div>
-        <button class="p-btn-primary" onclick="createUser()" style="margin-top:12px;">+ Créer l'utilisateur</button>
       </div>
     </div>
   </div>
